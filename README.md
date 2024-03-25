@@ -1,2 +1,3 @@
 # Techdegree-Project-4
  
+This project involves building a console application that interacts with inventory data stored in CSV files. I read the data from the CSV files, cleaned it, and then added it to a SQLite database with two tables—one for product inventory and another for brands. The console application, built using SQLAlchemy's ORM methods, allows users to view, create, edit, and delete records in the database. Additionally, users can generate backups of the data, creating two new CSV files reflecting the current state of the database.
