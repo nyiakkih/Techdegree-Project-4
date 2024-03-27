@@ -45,27 +45,29 @@ def add_inventory_csv():
             date_updated = clean_date(row['date_updated'])
             brand_name = row['brand_name']
 
-            # Get or create the brand
             brand = session.query(Brands).filter_by(brand_name=brand_name).first()
             if not brand:
                 brand = Brands(brand_name=brand_name)
                 session.add(brand)
                 session.commit()
 
-            # Check if the product already exists in the database
             existing_product = session.query(Product).join(Brands).filter(
                 Product.product_name == product_name,
                 Brands.brand_name == brand_name
             ).first()
 
             if existing_product:
-                # Update the existing product
-                existing_product.product_price = product_price
-                existing_product.product_quantity = product_quantity
-                existing_product.date_updated = date_updated
-                print(f"Product '{product_name}' updated.")
+                existing_date_updated = datetime.combine(existing_product.date_updated, datetime.min.time())
+                new_date_updated = datetime.combine(date_updated, datetime.min.time())
+
+                if existing_date_updated < new_date_updated:
+                    existing_product.product_price = product_price
+                    existing_product.product_quantity = product_quantity
+                    existing_product.date_updated = date_updated
+                    print(f"Product '{product_name}' updated.")
+                else:
+                    print(f"Product '{product_name}' already exists with more recent data. Skipping...")
             else:
-                # Create a new product
                 new_product = Product(
                     product_name=product_name,
                     product_price=product_price,
