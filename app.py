@@ -36,8 +36,6 @@ def clean_price(price_str):
         return
 
 def add_inventory_csv():
-    product_data = {}
-
     with open('inventory.csv') as csvfile:
         data = csv.DictReader(csvfile)
         for row in data:
@@ -47,21 +45,27 @@ def add_inventory_csv():
             date_updated = clean_date(row['date_updated'])
             brand_name = row['brand_name']
 
-            if product_name in product_data:
-                existing_product = product_data[product_name]
-                if existing_product.date_updated < date_updated:
-                    existing_product.product_price = product_price
-                    existing_product.product_quantity = product_quantity
-                    existing_product.date_updated = date_updated
-                    existing_product.brand_name = brand_name
-                    print(f"Product '{product_name}' already exists in the database. Updated.")
-            else:
-                brand = session.query(Brands).filter_by(brand_name=brand_name).first()
-                if not brand:
-                    brand = Brands(brand_name=brand_name)
-                    session.add(brand)
-                    session.commit()
+            # Get or create the brand
+            brand = session.query(Brands).filter_by(brand_name=brand_name).first()
+            if not brand:
+                brand = Brands(brand_name=brand_name)
+                session.add(brand)
+                session.commit()
 
+            # Check if the product already exists in the database
+            existing_product = session.query(Product).join(Brands).filter(
+                Product.product_name == product_name,
+                Brands.brand_name == brand_name
+            ).first()
+
+            if existing_product:
+                # Update the existing product
+                existing_product.product_price = product_price
+                existing_product.product_quantity = product_quantity
+                existing_product.date_updated = date_updated
+                print(f"Product '{product_name}' updated.")
+            else:
+                # Create a new product
                 new_product = Product(
                     product_name=product_name,
                     product_price=product_price,
@@ -69,10 +73,9 @@ def add_inventory_csv():
                     date_updated=date_updated,
                     brands=brand
                 )
-                product_data[product_name] = new_product
+                session.add(new_product)
                 print(f"Product '{product_name}' added to the database.")
 
-    session.add_all(product_data.values())
     session.commit()
     print("Inventory added successfully.")
 
@@ -203,7 +206,7 @@ def add_new_product():
     brand_name = input("Enter the brand name: ")
 
     product_price = clean_price(product_price)
-    if product_price is None:
+    if product_price:
         print("Invalid price format. Please enter a valid price.")
         return
     
