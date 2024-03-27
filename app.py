@@ -17,8 +17,10 @@ def add_brands_csv():
         data = csv.DictReader(csvfile)
         for row in data:
             brand_name = row['brand_name']
-            new_brand = Brands(brand_name=brand_name)
-            session.add(new_brand)
+            existing_brand = session.query(Brands).filter_by(brand_name=brand_name).first()
+            if not existing_brand:
+                new_brand = Brands(brand_name=brand_name)
+                session.add(new_brand)
         session.commit()
     # print("Brands added successfully.")
 
@@ -204,14 +206,17 @@ def add_new_product():
     print("\nAdding a new product.")
     product_name = input("Enter the product name: ")
     product_quantity = input("Enter the product quantity: ")
-    product_price = input("Enter the product price: ")
+    product_price = input("Enter the product price (e.g., 5.99): ")
     brand_name = input("Enter the brand name: ")
 
     product_price = clean_price(product_price)
-    if product_price:
+
+    if product_price is None:
         print("Invalid price format. Please enter a valid price.")
         return
-    
+
+    product_price = int(product_price)
+
     existing_product = session.query(Product).filter_by(product_name=product_name).first()
 
     if existing_product:
