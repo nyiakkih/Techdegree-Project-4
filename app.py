@@ -66,9 +66,9 @@ def add_inventory_csv():
                     existing_product.product_price = product_price
                     existing_product.product_quantity = product_quantity
                     existing_product.date_updated = date_updated
-                    print(f"Product '{product_name}' updated.")
-                else:
-                    print(f"Product '{product_name}' already exists with more recent data. Skipping...")
+                #     print(f"Product '{product_name}' updated.")
+                # else:
+                #     print(f"Product '{product_name}' already exists with more recent data. Skipping...")
             else:
                 new_product = Product(
                     product_name=product_name,
@@ -78,10 +78,10 @@ def add_inventory_csv():
                     brands=brand
                 )
                 session.add(new_product)
-                print(f"Product '{product_name}' added to the database.")
+                # print(f"Product '{product_name}' added to the database.")
 
     session.commit()
-    print("Inventory added successfully.")
+    # print("Inventory added successfully.")
 
 def app():
     while True:
